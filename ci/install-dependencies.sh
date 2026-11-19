@@ -80,7 +80,16 @@ ubuntu-*|i386/debian-*|debian-*)
 	# See <https://github.com/uutils/coreutils/issues/10508>.
 	if test -x /usr/bin/gnudirname
 	then
-		ln -sfT /usr/bin/gnudirname /usr/bin/dirname
+		# Ubuntu 26.04 may ship /usr/bin/dirname as a regular file.
+		# Replace it with GNU coreutils dirname only when it is not already correct.
+		if ! test -L /usr/bin/dirname ||
+		   test "$(readlink /usr/bin/dirname)" != /usr/bin/gnudirname
+		then
+			# Remove the old file or symlink first: some coreutils-compatible
+			# implementations do not replace this destination with ln -f.
+			rm -f /usr/bin/dirname
+			ln -s /usr/bin/gnudirname /usr/bin/dirname
+		fi
 	fi
 
 	case "$distro" in
