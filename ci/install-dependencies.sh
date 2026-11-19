@@ -85,7 +85,10 @@ ubuntu-*|i386/debian-*|debian-*)
 		if ! test -L /usr/bin/dirname ||
 		   test "$(readlink /usr/bin/dirname)" != /usr/bin/gnudirname
 		then
-			ln -sfnT /usr/bin/gnudirname /usr/bin/dirname
+			# Remove the old file or symlink first: some coreutils-compatible
+			# implementations do not replace this destination with ln -f.
+			rm -f /usr/bin/dirname
+			ln -s /usr/bin/gnudirname /usr/bin/dirname
 		fi
 	fi
 
