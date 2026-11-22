@@ -80,15 +80,25 @@ ubuntu-*|i386/debian-*|debian-*)
 	# See <https://github.com/uutils/coreutils/issues/10508>.
 	if test -x /usr/bin/gnudirname
 	then
-		# Ubuntu 26.04 may ship /usr/bin/dirname as a regular file.
-		# Replace it with GNU coreutils dirname only when it is not already correct.
+		# Keep the existing command available until the replacement is ready.
+		# The Ubuntu 26.04 runner's rust-coreutils ln may fail to replace an
+		# existing symlink even with -sfT (uutils/coreutils#10508).
 		if ! test -L /usr/bin/dirname ||
 		   test "$(readlink /usr/bin/dirname)" != /usr/bin/gnudirname
 		then
-			# Remove the old file or symlink first: some coreutils-compatible
-			# implementations do not replace this destination with ln -f.
-			rm -f /usr/bin/dirname
-			ln -s /usr/bin/gnudirname /usr/bin/dirname
+			dirname_tmpdir=$(mktemp -d /usr/bin/.dirname.XXXXXX)
+			if ! ln -s /usr/bin/gnudirname "$dirname_tmpdir/dirname"
+			then
+				rmdir "$dirname_tmpdir"
+				exit 1
+			fi
+			if ! mv -fT "$dirname_tmpdir/dirname" /usr/bin/dirname
+			then
+				rm -f "$dirname_tmpdir/dirname"
+				rmdir "$dirname_tmpdir"
+				exit 1
+			fi
+			rmdir "$dirname_tmpdir"
 		fi
 	fi
 
