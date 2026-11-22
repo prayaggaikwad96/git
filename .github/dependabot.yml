@@ -1,0 +1,18 @@
+version: 2
+
+updates:
+  # This repository is a Git source mirror; only automate workflow action
+  # maintenance here. Keep Git source changes on the upstream contribution path.
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+      time: "05:00"
+      timezone: Asia/Kolkata
+    open-pull-requests-limit: 5
+    groups:
+      github-actions-minor-and-patch:
+        update-types:
+          - minor
+          - patch
