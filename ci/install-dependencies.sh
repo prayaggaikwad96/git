@@ -86,7 +86,11 @@ ubuntu-*|i386/debian-*|debian-*)
 		if ! test -L /usr/bin/dirname ||
 		   test "$(readlink /usr/bin/dirname)" != /usr/bin/gnudirname
 		then
-			dirname_tmpdir=$(mktemp -d /usr/bin/.dirname.XXXXXX)
+			if ! dirname_tmpdir=$(mktemp -d /usr/bin/.dirname.XXXXXX)
+			then
+				echo "Unable to create temporary directory for dirname replacement" >&2
+				exit 1
+			fi
 			if ! ln -s /usr/bin/gnudirname "$dirname_tmpdir/dirname"
 			then
 				rmdir "$dirname_tmpdir"
