@@ -80,7 +80,26 @@ ubuntu-*|i386/debian-*|debian-*)
 	# See <https://github.com/uutils/coreutils/issues/10508>.
 	if test -x /usr/bin/gnudirname
 	then
-		ln -sfT /usr/bin/gnudirname /usr/bin/dirname
+		# Keep the existing command available until the replacement is ready.
+		# On Ubuntu 26.04, rust-coreutils ln may fail to replace an existing
+		# /usr/bin/dirname symlink even with -sfT.
+		if ! test -L /usr/bin/dirname ||
+		   test "$(readlink /usr/bin/dirname)" != /usr/bin/gnudirname
+		then
+			dirname_tmpdir=$(mktemp -d /usr/bin/.dirname.XXXXXX)
+			if ! ln -s /usr/bin/gnudirname "$dirname_tmpdir/dirname"
+			then
+				rmdir "$dirname_tmpdir"
+				exit 1
+			fi
+			if ! mv -fT "$dirname_tmpdir/dirname" /usr/bin/dirname
+			then
+				rm -f "$dirname_tmpdir/dirname"
+				rmdir "$dirname_tmpdir"
+				exit 1
+			fi
+			rmdir "$dirname_tmpdir"
+		fi
 	fi
 
 	case "$distro" in
