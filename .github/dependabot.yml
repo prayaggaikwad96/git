@@ -1,18 +1,42 @@
 version: 2
 
 updates:
-  # This repository is a Git source mirror; only automate workflow action
-  # maintenance here. Keep Git source changes on the upstream contribution path.
-  - package-ecosystem: github-actions
+  # The fork is primarily a Git source mirror. Keep both the Cargo manifest
+  # and the fork's own GitHub Actions dependencies on a weekly review cadence.
+  - package-ecosystem: cargo
     directory: /
     schedule:
       interval: weekly
       day: monday
       time: "05:00"
       timezone: Asia/Kolkata
-    open-pull-requests-limit: 5
+    open-pull-requests-limit: 10
     groups:
-      github-actions-minor-and-patch:
+      cargo-minor-and-patch:
+        patterns:
+          - "*"
         update-types:
           - minor
           - patch
+
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+      time: "05:30"
+      timezone: Asia/Kolkata
+    open-pull-requests-limit: 10
+    groups:
+      github-actions-minor-and-patch:
+        patterns:
+          - "*"
+        update-types:
+          - minor
+          - patch
+    labels:
+      - dependencies
+      - github-actions
+    commit-message:
+      prefix: "ci(deps)"
+      include: scope
